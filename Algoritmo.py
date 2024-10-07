@@ -1,6 +1,8 @@
 import numpy as np
 import random
 import math
+import matplotlib.pyplot as plt
+from matplotlib.animation import FuncAnimation
 
 
 class AG_MOBJ():
@@ -12,39 +14,41 @@ class AG_MOBJ():
         self.T = T
         self.xl = xl
         self.xu = xu
+        self.neighbors_size = math.floor(T * N)
         self.p = 30
         self.m = 2
+        self.F = 0.5
+        self.pr = 1/self.N
+        self.SIG = 20
         self.vectors = []
-        self.neightbors = []
+        self.neighbors = []
         self.pop = []
         self.fobj = []
         self.z = []
 
     def create_vectors(self):
         vectors = []
-        dst = 1/self.N
-        while dst < 1:
-            vector = [0+dst, 1-dst]
-            vectors.append(vector)
-            dst += dst
+        for i in range(self.N):
+            lambda1 = (i / self.N) * self.xu
+            lambda2 = self.xu - lambda1
+            vectors.append([lambda1, lambda2])
         self.vectors = vectors
 
     def find_neightbors(self):
         N = self.N
-        vectors = self.create_vectors()
+        self.create_vectors()
         dsts = np.zeros((N, N))
-
         for i in range(N):
             for j in range(N):
-                dsts[i, j] = np.linalg.norm(vectors[i] - vectors[j])
+                dsts[i, j] = np.linalg.norm(np.array(self.vectors[i]) - np.array(self.vectors[j]))
 
         neighbors = []
 
         for i in range(N):
-            nearest_indexes = np.argsort(dsts[i])[:self.T]
+            nearest_indexes = np.argsort(dsts[i])[:self.neighbors_size]
             neighbors.append(nearest_indexes)
 
-        self.neightbors = neighbors
+        self.neighbors = neighbors
 
     def initialize_pop(self):
         pop = []
@@ -55,19 +59,23 @@ class AG_MOBJ():
             pop.append(ind)
 
         self.pop = pop
+    
+    def evaluate_indv(self, indv):
+        tmp = 0
+        obj = [0, 0]
+        obj[0] = indv[0]
+        for i in range(1, self.p):
+            tmp += indv[i]
+
+        g = 1 + ((9 * tmp) / (self.p - 1))
+        h = 1 - math.sqrt(indv[0] / g) - (indv[0] / g) * math.sin(10 * math.pi * indv[0])
+        obj[1] = g * h
+        return obj
 
     def evaluate_pop(self):
         fobj = []
         for indv in self.pop:
-            tmp = 0
-            obj = [0, 0]
-            obj[0] = indv[0]
-            for i in range(1, self.N):
-                tmp += self.pop[i]
-
-            g = 1 + ((9 * tmp) / (self.N - 1))
-            h = 1 - math.sqrt(indv[0] / g) - (indv[0] / g) * math.sin(10 * math.pi * indv[0])
-            obj[1] = g * h
+            obj = self.evaluate_indv(indv)
             fobj.append(obj)
 
         self.fobj = fobj
@@ -85,7 +93,84 @@ class AG_MOBJ():
         self.initialize_pop()
         self.evaluate_pop()
         self.reference_point()
+        
+    def g_te(self, obj_indv, vector):
+        return max([vector[i]*abs(obj_indv[i] - self.z[i]) for i in range(self.m)])
 
+    def reproduction(self):
+        for i in range(self.N):
+            indv = np.array(self.pop[i])
+            if random.random() < self.cross_op:
+                neighbors_indexes = random.sample(self.neighbors[i].tolist(), 3)
+                neighbors = [np.array(self.pop[m]) for m in neighbors_indexes]
+                indv = neighbors[0] + self.F * (neighbors[1] - neighbors[2])
+            if random.random() < self.pr:
+                sigma = (self.xu - self.xl)/self.SIG
+                indv = indv + np.random.normal(0, sigma, size=30)
+            # Asegurar de que no se sobrpasa el espacio de busqueda definido
+            indv[indv > 1.] = 1.
+            indv[indv < 0.] = 0.
+            obj_indv = self.evaluate_indv(indv)
+            for m in range(self.m):
+                if obj_indv[m] < self.z[m]:
+                    self.z[m] = obj_indv[m] 
+            for j in self.neighbors[i]:
+                obj_neighbor = self.fobj[j]
+                if self.g_te(obj_indv, self.vectors[j]) <= self.g_te(obj_neighbor, self.vectors[j]):
+                    self.pop[j] = indv.tolist()
+                    self.fobj[j] = obj_indv
 
-ag = AG_MOBJ(1, 1, 1, 1, 1, 1, 1)
-ag.initialization()
+    
+    def read_dat(self, file_name):
+        x = []
+        y = []
+        with open(file_name, 'r') as file:
+            for i in file:
+                coordinates = i.split()
+                x.append(float(coordinates[0]))
+                y.append(float(coordinates[1]))
+        return x, y
+    
+    def separate_coordinates(self):
+        x = []
+        y = []
+        for i in self.fobj:
+            x.append(i[0])
+            y.append(i[1])
+        return x, y
+    
+
+    def ag_mobj(self):
+        self.initialization()
+        
+        fig, ax = plt.subplots()
+        
+        x_pf, y_pf = self.read_dat('PF.dat')
+        pareto_plot = ax.scatter(x_pf, y_pf, color='green', label='Pareto front', marker='o')
+
+        x, y = self.separate_coordinates()
+        pop_plot = ax.scatter(x, y, color='blue', label='F(x)', marker='o')
+
+        ax.set_xlabel("f1(x)")
+        ax.set_ylabel("f2(x)")
+        ax.legend()
+
+        iteration_text = ax.text(0.05, 0.95, '', transform=ax.transAxes, fontsize=12, verticalalignment='top')
+
+        def update(frame):
+            self.reproduction()
+            x, y = self.separate_coordinates()
+            pop_plot.set_offsets(np.c_[x, y])
+            iteration_text.set_text(f"Iteración: {frame + 1}")
+            
+            return pop_plot, iteration_text
+
+        anim = FuncAnimation(fig, update, frames=self.G, interval=100, repeat=False)
+
+        plt.show()
+        return self.pop
+
+            
+
+ag = AG_MOBJ(50, 200, 0.03, 0.5, 0.3, 0, 1)
+ag.ag_mobj()
