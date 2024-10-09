@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 from matplotlib.animation import FuncAnimation
 
 
-class AG_MOBJ():
+class ZDT3():
     def __init__(self, N, G, mut_op, cross_op, T, xl=0., xu=1.):
         self.N = N
         self.G = G
@@ -135,7 +135,6 @@ class AG_MOBJ():
                 aux = False
         if aux:
             dominant_solutions.append(obj_indv)
-        print(len(dominant_solutions))
         self.overwrite_file(dominant_solutions)
 
     def reproduction(self):
@@ -214,5 +213,5 @@ class AG_MOBJ():
         return self.pop
 
 
-ag = AG_MOBJ(40, 250, 0.03, 0.7, 0.2, 0., 1.)
+ag = ZDT3(40, 250, 0.03, 0.7, 0.2, 0., 1.)
 ag.ag_mobj()
