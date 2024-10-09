@@ -6,7 +6,7 @@ from matplotlib.animation import FuncAnimation
 
 
 class AG_MOBJ():
-    def __init__(self, N, G, mut_op, cross_op, T, xl=0, xu=1):
+    def __init__(self, N, G, mut_op, cross_op, T, xl=0., xu=1.):
         self.N = N
         self.G = G
         self.mut_op = mut_op
@@ -18,7 +18,7 @@ class AG_MOBJ():
         self.p = 30
         self.m = 2
         self.F = 0.5
-        self.pr = 1/self.N
+        self.pr = 0.2
         self.SIG = 20
         self.vectors = []
         self.neighbors = []
@@ -28,11 +28,12 @@ class AG_MOBJ():
 
     def create_vectors(self):
         vectors = []
-        for i in range(self.N):
-            lambda1 = (i / self.N) * self.xu
-            lambda2 = self.xu - lambda1
-            vectors.append([lambda1, lambda2])
-        self.vectors = vectors
+        dst = 0
+        while dst < 1:
+            vector = [0+dst, 1-dst]
+            vectors.append(vector)
+            dst += 1/self.N
+        self.vectors = np.array(vectors)
 
     def find_neightbors(self):
         N = self.N
@@ -86,42 +87,84 @@ class AG_MOBJ():
             zi = min(self.fobj, key=lambda x:x[i])[i]
             z.append(zi)
         self.z = z
-
+        
+    def overwrite_file(self, solutions):
+        with open("dominant_solutions.dat", "w") as archivo:
+            for sol in solutions:
+                archivo.write(f"{sol[0]:.6f}\t{sol[1]:.6f}\n")
+    
+    def save_dominant_solutions(self):
+        res = []
+        for sol1 in self.fobj:
+            aux = True
+            for sol2 in self.fobj:
+                if sol1[0] > sol2[0] and sol1[1] > sol2[1]:
+                    aux = False
+                    break
+            if aux:
+                res.append(sol1)
+    
+        self.overwrite_file(res)
+                
     def initialization(self):
         self.create_vectors()
         self.find_neightbors()
         self.initialize_pop()
         self.evaluate_pop()
         self.reference_point()
+        self.save_dominant_solutions()
         
     def g_te(self, obj_indv, vector):
         return max([vector[i]*abs(obj_indv[i] - self.z[i]) for i in range(self.m)])
+    
+    def read_dat(self, file_name):
+        res = []
+        with open(file_name, 'r') as file:
+            for i in file:
+                coordinates = i.split()
+                res.append([float(coordinates[0]), float(coordinates[1])])
+        return res
+    
+    def update_dominant_solutions(self, obj_indv):
+        dominant_solutions = self.read_dat("dominant_solutions.dat")
+        aux = True
+        for sol in dominant_solutions:
+            if sol[0] >= obj_indv[0] and sol[1] >= obj_indv[1]:
+                dominant_solutions.remove(sol)
+            elif sol[0] <= obj_indv[0] and sol[1] <= obj_indv[1]:
+                aux = False
+        if aux:
+            dominant_solutions.append(obj_indv)
+        print(len(dominant_solutions))
+        self.overwrite_file(dominant_solutions)
 
     def reproduction(self):
         for i in range(self.N):
             indv = np.array(self.pop[i])
             if random.random() < self.cross_op:
-                neighbors_indexes = random.sample(self.neighbors[i].tolist(), 3)
+                neighbors_indexes = random.sample(self.neighbors[i].tolist(), k=3)
                 neighbors = [np.array(self.pop[m]) for m in neighbors_indexes]
                 indv = neighbors[0] + self.F * (neighbors[1] - neighbors[2])
             if random.random() < self.pr:
                 sigma = (self.xu - self.xl)/self.SIG
                 indv = indv + np.random.normal(0, sigma, size=30)
             # Asegurar de que no se sobrpasa el espacio de busqueda definido
-            indv[indv > 1.] = 1.
-            indv[indv < 0.] = 0.
+            indv = np.array([-x if x < 0 else (2 - x if x > 1 else x) for x in indv]) 
             obj_indv = self.evaluate_indv(indv)
             for m in range(self.m):
                 if obj_indv[m] < self.z[m]:
                     self.z[m] = obj_indv[m] 
+            # Actualizar fichero de las soluciones no dominadas
+            self.update_dominant_solutions(obj_indv)
             for j in self.neighbors[i]:
                 obj_neighbor = self.fobj[j]
-                if self.g_te(obj_indv, self.vectors[j]) <= self.g_te(obj_neighbor, self.vectors[j]):
+                vector = self.vectors[j]
+                if self.g_te(obj_indv, vector) <= self.g_te(obj_neighbor, vector):
                     self.pop[j] = indv.tolist()
                     self.fobj[j] = obj_indv
 
     
-    def read_dat(self, file_name):
+    def read_dat_separate_coordinates(self, file_name):
         x = []
         y = []
         with open(file_name, 'r') as file:
@@ -145,7 +188,7 @@ class AG_MOBJ():
         
         fig, ax = plt.subplots()
         
-        x_pf, y_pf = self.read_dat('PF.dat')
+        x_pf, y_pf = self.read_dat_separate_coordinates('PF.dat')
         pareto_plot = ax.scatter(x_pf, y_pf, color='green', label='Pareto front', marker='o')
 
         x, y = self.separate_coordinates()
@@ -170,7 +213,6 @@ class AG_MOBJ():
         plt.show()
         return self.pop
 
-            
 
-ag = AG_MOBJ(50, 200, 0.03, 0.5, 0.3, 0, 1)
+ag = AG_MOBJ(40, 250, 0.03, 0.7, 0.2, 0., 1.)
 ag.ag_mobj()
