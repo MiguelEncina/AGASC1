@@ -16,9 +16,10 @@ class ZDT3():
         self.xu = xu
         self.neighbors_size = math.floor(T * N)
         self.p = 30
+        self.delta = random.randint(0,self.p - 1)
         self.m = 2
         self.F = 0.5
-        self.pr = 0.2
+        self.pr = 1/self.p
         self.SIG = 20
         self.vectors = []
         self.neighbors = []
@@ -140,14 +141,18 @@ class ZDT3():
     def reproduction(self):
         for i in range(self.N):
             indv = np.array(self.pop[i])
-            if random.random() < self.cross_op:
-                neighbors_indexes = random.sample(self.neighbors[i].tolist(), k=3)
-                neighbors = [np.array(self.pop[m]) for m in neighbors_indexes]
-                indv = neighbors[0] + self.F * (neighbors[1] - neighbors[2])
+            # Metodo de curce
+            neighbors_indexes = random.sample(self.neighbors[i].tolist(), k=3)
+            neighbors = [np.array(self.pop[m]) for m in neighbors_indexes]
+            v = neighbors[0] + self.F * (neighbors[1] - neighbors[2])
+            for k in range(self.p):
+                if random.random() < self.cross_op or i == self.delta:
+                    indv[k] = v[k]
+            # Mutacion gaussiana
             if random.random() < self.pr:
                 sigma = (self.xu - self.xl)/self.SIG
                 indv = indv + np.random.normal(0, sigma, size=30)
-            # Asegurar de que no se sobrpasa el espacio de busqueda definido
+            # Asegurar de que no se sobrpasa el espacio de busqueda definido mediante rebote
             indv = np.array([-x if x < 0 else (2 - x if x > 1 else x) for x in indv]) 
             obj_indv = self.evaluate_indv(indv)
             for m in range(self.m):
@@ -213,5 +218,5 @@ class ZDT3():
         return self.pop
 
 
-ag = ZDT3(40, 250, 0.03, 0.7, 0.2, 0., 1.)
+ag = ZDT3(100, 100, 0.03, 0.7, 0.2, 0., 1.)
 ag.ag_mobj()
