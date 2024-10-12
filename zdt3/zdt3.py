@@ -90,7 +90,7 @@ class ZDT3():
         self.z = z
         
     def overwrite_file_dominant_solutions(self, solutions):
-        with open("dominant_solutions.dat", "w") as archivo:
+        with open("./zdt3/dominant_solutions.dat", "w") as archivo:
             for sol in solutions:
                 archivo.write(f"{sol[0]:.6f}\t{sol[1]:.6f}\n")
     
@@ -114,7 +114,7 @@ class ZDT3():
         self.evaluate_pop()
         self.reference_point()
         self.save_dominant_solutions()
-        with open("zdt3_all_popm.out", "w") as archivo:
+        with open("./zdt3/zdt3_all_popm.out", "w") as archivo:
             for sol in self.fobj:
                 archivo.write(f"{sol[0]:.6f}\t{sol[1]:.6f}\t{0.:.6f}\n")
         
@@ -130,7 +130,7 @@ class ZDT3():
         return res
     
     def update_dominant_solutions(self, obj_indv):
-        dominant_solutions = self.read_dat("dominant_solutions.dat")
+        dominant_solutions = self.read_dat("./zdt3/dominant_solutions.dat")
         aux = True
         for sol in dominant_solutions:
             if sol[0] >= obj_indv[0] and sol[1] >= obj_indv[1]:
@@ -195,7 +195,7 @@ class ZDT3():
         
         fig, ax = plt.subplots()
         
-        x_pf, y_pf = self.read_dat_separate_coordinates('./zdt3/PF.dat')
+        x_pf, y_pf = self.read_dat_separate_coordinates('PF.dat')
         pareto_plot = ax.scatter(x_pf, y_pf, color='green', label='Pareto front', marker='o')
 
         x, y = self.separate_coordinates()
@@ -211,7 +211,7 @@ class ZDT3():
             self.reproduction()
             if frame != 0:
                 # Añadir soluciones al archivo all_popm
-                with open("zdt3_all_popm.out", "a") as archivo:
+                with open("./zdt3/zdt3_all_popm.out", "a") as archivo:
                     for sol in self.fobj:
                         archivo.write(f"{sol[0]:.6f}\t{sol[1]:.6f}\t{0.:.6f}\n")
             x, y = self.separate_coordinates()
