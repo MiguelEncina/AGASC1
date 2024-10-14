@@ -1,0 +1,21 @@
+#!/bin/bash
+
+# Iterar sobre un rango de números
+for i in {1..9}; do
+    python3 zdt3/zdt3.py
+    cat <<EOL > metrics.in
+2
+1
+2
+zdt3/EVAL10000/P200G50/zdt3_all_popmp200g50_seed0$i.out
+50
+200
+zdt3/zdt3_all_popm.out
+50
+200
+1
+EOL
+    ./metrics < metrics.in 2> error.log || true &
+    python3 plot_metrics.py
+
+done

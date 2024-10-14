@@ -7,7 +7,7 @@ for i in {1..9}; do
 2
 1
 2
-EVAL10000/P100G100/zdt3_all_popmp100g100_seed0$i.out
+zdt3/EVAL10000/P100G100/zdt3_all_popmp100g100_seed0$i.out
 100
 100
 zdt3/zdt3_all_popm.out

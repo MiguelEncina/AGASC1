@@ -5,22 +5,26 @@ import matplotlib.pyplot as plt
 from matplotlib.animation import FuncAnimation
 
 
-class ZDT3():
-    def __init__(self, N, G, mut_op, cross_op, T, xl=0., xu=1.):
+class CF6():
+    def __init__(self, N, G, mut_op, cross_op, T, n, xl1=0., xu1=1., xli = -2., xui = 2.):
         self.N = N
         self.G = G
+        self.n = n
         self.mut_op = mut_op
         self.cross_op = cross_op
         self.T = T
-        self.xl = xl
-        self.xu = xu
+        self.xl1 = xl1
+        self.xu1 = xu1
+        self.xli = xli
+        self.xui = xui
         self.neighbors_size = math.floor(T * N)
-        self.p = 30
-        self.delta = random.randint(0,self.p - 1)
+        self.delta = random.randint(0,self.n - 1)
         self.m = 2
         self.F = 0.5
-        self.pr = 1/self.p
+        self.pr = 1/self.n
         self.SIG = 20
+        self.J1 = [j for j in range(3, self.n + 1, 2)]
+        self.J2 = [j for j in range(2, self.n + 1, 2)]
         self.vectors = []
         self.neighbors = []
         self.pop = []
@@ -56,22 +60,37 @@ class ZDT3():
         pop = []
         for i in range(self.N):
             ind = []
-            for p in range(self.p):
-                ind.append(random.uniform(self.xl, self.xu))
+            for p in range(self.n):
+                if p == 0:
+                    ind.append(random.uniform(self.xl1, self.xu1))
+                else:
+                    ind.append(random.uniform(self.xli, self.xui))
             pop.append(ind)
 
         self.pop = pop
     
     def evaluate_indv(self, indv):
-        tmp = 0
-        obj = [0, 0]
-        obj[0] = indv[0]
-        for i in range(1, self.p):
-            tmp += indv[i]
-
-        g = 1 + ((9 * tmp) / (self.p - 1))
-        h = 1 - math.sqrt(indv[0] / g) - (indv[0] / g) * math.sin(10 * math.pi * indv[0])
-        obj[1] = g * h
+        obj = [0, 0, 0]
+        
+        yj1 = 0
+        for j in self.J1:
+            yj1 += (indv[j-1] - 0.8 * indv[0] * math.cos(6 * math.pi * indv[0] + (j * math.pi)/self.n)) ** 2
+        obj[0] = indv[0] + yj1
+        
+        yj2 = 0
+        for j in self.J2:
+            yj2 += (indv[j-1] - 0.8 * indv[0] * math.cos(6 * math.pi * indv[0] + (j * math.pi)/self.n)) ** 2
+        obj[1] = (1 - indv[0]) ** 2 + yj2 
+        
+        const = 0
+        const1 = indv[1] - 0.8 * indv[0] * math.sin(6 * math.pi * indv[0] + (2 * math.pi)/self.n) - np.sign(0.5 * (1 - indv[0]) - (1 - indv[0]) ** 2) * math.sqrt(abs(0.5 * (1 - indv[0]) - (1 - indv[0]) ** 2))
+        if const1 < 0:
+            const += const1
+        const2 = indv[3] - 0.8 * indv[0] * math.sin(6 * math.pi * indv[0] + (4 * math.pi)/self.n) - np.sign(0.25 * math.sqrt(1 - indv[0]) - 0.5 ** (1 - indv[0])) * math.sqrt(abs(0.25 * math.sqrt(1 - indv[0]) - 0.5 * (1 - indv[0])))
+        if const2 < 0:
+            const += const2
+        obj[2] = const
+        
         return obj
 
     def evaluate_pop(self):
@@ -90,7 +109,7 @@ class ZDT3():
         self.z = z
         
     def overwrite_file_dominant_solutions(self, solutions):
-        with open("./zdt3/dominant_solutions.dat", "w") as archivo:
+        with open("./cf6/dominant_solutions.dat", "w") as archivo:
             for sol in solutions:
                 archivo.write(f"{sol[0]:.6f}\t{sol[1]:.6f}\n")
     
@@ -114,7 +133,7 @@ class ZDT3():
         self.evaluate_pop()
         self.reference_point()
         self.save_dominant_solutions()
-        with open("./zdt3/zdt3_all_popm.out", "w") as archivo:
+        with open("./cf6/cf6_all_popm.out", "w") as archivo:
             for sol in self.fobj:
                 archivo.write(f"{sol[0]:.6f}\t{sol[1]:.6f}\t{0.:.6f}\n")
         
@@ -130,7 +149,7 @@ class ZDT3():
         return res
     
     def update_dominant_solutions(self, obj_indv):
-        dominant_solutions = self.read_dat("./zdt3/dominant_solutions.dat")
+        dominant_solutions = self.read_dat("./cf6/dominant_solutions.dat")
         aux = True
         for sol in dominant_solutions:
             if sol[0] >= obj_indv[0] and sol[1] >= obj_indv[1]:
@@ -140,6 +159,20 @@ class ZDT3():
         if aux:
             dominant_solutions.append(obj_indv)
         self.overwrite_file_dominant_solutions(dominant_solutions)
+        
+    def check_bounds(self, indv):
+        for i in range(self.n):
+            if i == 0:
+                if indv[i] < 0:
+                    indv[i] = -indv[i]
+                elif indv[i] > 1:
+                    indv[i] = 2 - indv[i]
+            else:
+                if indv[i] < -2:
+                    indv[i] = -2 - indv[i]
+                elif indv[i] > 2:
+                    indv[i] = 3 - indv[i]
+        return indv
 
     def reproduction(self):
         for i in range(self.N):
@@ -148,28 +181,37 @@ class ZDT3():
             neighbors_indexes = random.sample(self.neighbors[i].tolist(), k=3)
             neighbors = [np.array(self.pop[m]) for m in neighbors_indexes]
             v = neighbors[0] + self.F * (neighbors[1] - neighbors[2])
-            for k in range(self.p):
+            for k in range(self.n):
                 if random.random() < self.cross_op or i == self.delta:
                     indv[k] = v[k]
             # Mutacion gaussiana
             if random.random() < self.pr:
-                sigma = (self.xu - self.xl)/self.SIG
-                indv = indv + np.random.normal(0, sigma, size=30)
+                sigma = (self.xui - self.xli)/self.SIG
+                indv = indv + np.random.normal(0, sigma, size=self.n)
             # Asegurar de que no se sobrpasa el espacio de busqueda definido mediante rebote
-            indv = np.array([-x if x < 0 else (2 - x if x > 1 else x) for x in indv]) 
+            indv = self.check_bounds(indv)
             obj_indv = self.evaluate_indv(indv)
             for m in range(self.m):
                 if obj_indv[m] < self.z[m]:
                     self.z[m] = obj_indv[m] 
             # Actualizar fichero de las soluciones no dominadas
             self.update_dominant_solutions(obj_indv)
+            const_indv = obj_indv[2]
             for j in self.neighbors[i]:
                 obj_neighbor = self.fobj[j]
+                const_neighbor = obj_neighbor[2]
                 vector = self.vectors[j]
-                if self.g_te(obj_indv, vector) <= self.g_te(obj_neighbor, vector):
+                if const_neighbor == 0 and const_indv == 0:
+                    if self.g_te(obj_indv, vector) <= self.g_te(obj_neighbor, vector):
+                        self.pop[j] = indv.tolist()
+                        self.fobj[j] = obj_indv
+                elif const_neighbor < 0 and const_indv == 0:
                     self.pop[j] = indv.tolist()
                     self.fobj[j] = obj_indv
-
+                elif const_neighbor < 0 and const_indv < 0:
+                    if const_indv > const_neighbor:
+                        self.pop[j] = indv.tolist()
+                        self.fobj[j] = obj_indv
     
     def read_dat_separate_coordinates(self, file_name):
         x = []
@@ -195,7 +237,7 @@ class ZDT3():
         
         fig, ax = plt.subplots()
         
-        x_pf, y_pf = self.read_dat_separate_coordinates('./zdt3/PF.dat')
+        x_pf, y_pf = self.read_dat_separate_coordinates('./cf6/PF.dat')
         pareto_plot = ax.scatter(x_pf, y_pf, color='green', label='Pareto front', marker='o')
 
         x, y = self.separate_coordinates()
@@ -211,7 +253,7 @@ class ZDT3():
             self.reproduction()
             if frame != 0:
                 # Añadir soluciones al archivo all_popm
-                with open("./zdt3/zdt3_all_popm.out", "a") as archivo:
+                with open("./cf6/cf6_all_popm.out", "a") as archivo:
                     for sol in self.fobj:
                         archivo.write(f"{sol[0]:.6f}\t{sol[1]:.6f}\t{0.:.6f}\n")
             x, y = self.separate_coordinates()
@@ -226,5 +268,5 @@ class ZDT3():
         return self.pop
 
 
-ag = ZDT3(100, 100, 0.03, 0.7, 0.2, 0., 1.)
+ag = CF6(100, 100, 0.03, 0.7, 0.3, 4, 0., 1., -2., 2.)
 ag.ag_mobj()
