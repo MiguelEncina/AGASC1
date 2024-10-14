@@ -8,14 +8,13 @@ for i in {1..9}; do
 1
 2
 zdt3/EVAL10000/P40G250/zdt3_all_popmp40g250_seed0$i.out
-250
 40
+250
 zdt3/zdt3_all_popm.out
-250
 40
+250
 1
 EOL
-    ./metrics < metrics.in 2> error.log || true &
-    python3 plot_metrics.py
+    ./metrics < metrics.in
 
 done

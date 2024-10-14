@@ -7,14 +7,14 @@ for i in {1..9}; do
 2
 1
 2
-zdt3/EVAL10000/P200G50/zdt3_all_popmp200g50_seed0$i.out
-200
-50
-zdt3/zdt3_all_popm.out
-200
-50
+cf6/EVAL10000_4D/P100G100/cf6_4d_all_popmp100g100_seed0$i.out
+100
+100
+cf6/cf6_all_popm.out
+100
+100
 1
 EOL
-    ./metrics < metrics.in 
+    ./metrics < metrics.in
 
 done

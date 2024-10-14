@@ -15,7 +15,6 @@ zdt3/zdt3_all_popm.out
 100
 1
 EOL
-    ./metrics < metrics.in 2> error.log || true &
-    python3 plot_metrics.py
+    ./metrics < metrics.in
 
 done
