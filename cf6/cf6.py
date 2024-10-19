@@ -84,9 +84,14 @@ class CF6():
         
         const = 0
         const1 = indv[1] - 0.8 * indv[0] * math.sin(6 * math.pi * indv[0] + (2 * math.pi)/self.n) - np.sign(0.5 * (1 - indv[0]) - (1 - indv[0]) ** 2) * math.sqrt(abs(0.5 * (1 - indv[0]) - (1 - indv[0]) ** 2))
+        # print(const1)
         if const1 < 0:
             const += const1
-        const2 = indv[3] - 0.8 * indv[0] * math.sin(6 * math.pi * indv[0] + (4 * math.pi)/self.n) - np.sign(0.25 * math.sqrt(1 - indv[0]) - 0.5 ** (1 - indv[0])) * math.sqrt(abs(0.25 * math.sqrt(1 - indv[0]) - 0.5 * (1 - indv[0])))
+        const2 = indv[3] - 0.8 * indv[0] * math.sin(6. * math.pi * indv[0] + 4. * math.pi/self.n) - np.sign(0.25 * math.sqrt(1. - indv[0]) - 0.5 * (1. - indv[0])) * math.sqrt(abs(0.25 * math.sqrt(1. - indv[0]) - 0.5 * (1. - indv[0])))
+        # print(const2)
+        # print(np.sign(0.25 * math.sqrt(1 - indv[0]) - 0.5 * (1 - indv[0])))
+        # print(np.sign(0.25 * math.sqrt(1. - indv[0]) - 0.5 * (1. - indv[0])) * math.sqrt(abs(0.25 * math.sqrt(1. - indv[0]) - 0.5 * (1. - indv[0]))))
+        # print(indv[3] - 0.8 * indv[0] * math.sin(6. * math.pi * indv[0] + 4. * math.pi/self.n))
         if const2 < 0:
             const += const2
         obj[2] = const
@@ -169,9 +174,9 @@ class CF6():
                     indv[i] = 2 - indv[i]
             else:
                 if indv[i] < -2:
-                    indv[i] = -2 - indv[i]
+                    indv[i] = -2
                 elif indv[i] > 2:
-                    indv[i] = 3 - indv[i]
+                    indv[i] = 2
         return indv
 
     def reproduction(self):
@@ -268,5 +273,6 @@ class CF6():
         return self.pop
 
 
-ag = CF6(100, 100, 0.03, 0.7, 0.3, 4, 0., 1., -2., 2.)
+ag = CF6(100, 100, 0.03, 0.5, 0.3, 4, 0., 1., -2., 2.)
+indv = np.array([0.56459503,0.01702003,-0.1605145,0.27745099])
 ag.ag_mobj()

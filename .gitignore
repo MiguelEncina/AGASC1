@@ -1,4 +1,3 @@
-.venv
+venv
 dominant_solutions.dat
 *.out
-*.log
