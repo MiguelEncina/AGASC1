@@ -79,19 +79,14 @@ class CF6():
         
         yj2 = 0
         for j in self.J2:
-            yj2 += (indv[j-1] - 0.8 * indv[0] * math.cos(6 * math.pi * indv[0] + (j * math.pi)/self.n)) ** 2
+            yj2 += (indv[j-1] - 0.8 * indv[0] * math.sin(6 * math.pi * indv[0] + (j * math.pi)/self.n)) ** 2
         obj[1] = (1 - indv[0]) ** 2 + yj2 
         
         const = 0
         const1 = indv[1] - 0.8 * indv[0] * math.sin(6 * math.pi * indv[0] + (2 * math.pi)/self.n) - np.sign(0.5 * (1 - indv[0]) - (1 - indv[0]) ** 2) * math.sqrt(abs(0.5 * (1 - indv[0]) - (1 - indv[0]) ** 2))
-        # print(const1)
         if const1 < 0:
             const += const1
         const2 = indv[3] - 0.8 * indv[0] * math.sin(6. * math.pi * indv[0] + 4. * math.pi/self.n) - np.sign(0.25 * math.sqrt(1. - indv[0]) - 0.5 * (1. - indv[0])) * math.sqrt(abs(0.25 * math.sqrt(1. - indv[0]) - 0.5 * (1. - indv[0])))
-        # print(const2)
-        # print(np.sign(0.25 * math.sqrt(1 - indv[0]) - 0.5 * (1 - indv[0])))
-        # print(np.sign(0.25 * math.sqrt(1. - indv[0]) - 0.5 * (1. - indv[0])) * math.sqrt(abs(0.25 * math.sqrt(1. - indv[0]) - 0.5 * (1. - indv[0]))))
-        # print(indv[3] - 0.8 * indv[0] * math.sin(6. * math.pi * indv[0] + 4. * math.pi/self.n))
         if const2 < 0:
             const += const2
         obj[2] = const
@@ -195,7 +190,7 @@ class CF6():
                 indv = indv + np.random.normal(0, sigma, size=self.n)
             # Asegurar de que no se sobrpasa el espacio de busqueda definido mediante rebote
             indv = self.check_bounds(indv)
-            obj_indv = self.evaluate_indv(indv)
+            obj_indv = self.evaluate_indv(indv.tolist())
             for m in range(self.m):
                 if obj_indv[m] < self.z[m]:
                     self.z[m] = obj_indv[m] 
@@ -239,7 +234,7 @@ class CF6():
 
     def ag_mobj(self):
         self.initialization()
-        
+                
         fig, ax = plt.subplots()
         
         x_pf, y_pf = self.read_dat_separate_coordinates('./cf6/PF.dat')
@@ -255,15 +250,22 @@ class CF6():
         iteration_text = ax.text(0.05, 0.95, '', transform=ax.transAxes, fontsize=12, verticalalignment='top')
 
         def update(frame):
-            self.reproduction()
             if frame != 0:
                 # Añadir soluciones al archivo all_popm
                 with open("./cf6/cf6_all_popm.out", "a") as archivo:
                     for sol in self.fobj:
                         archivo.write(f"{sol[0]:.6f}\t{sol[1]:.6f}\t{0.:.6f}\n")
+            self.reproduction()
             x, y = self.separate_coordinates()
             pop_plot.set_offsets(np.c_[x, y])
             iteration_text.set_text(f"Iteración: {frame + 1}")
+            
+            if frame == 99:
+                with open("./cf6/cf6_final_popp.out", "w") as archivo:
+                    for i in range(self.N):
+                        indv = self.pop[i]
+                        sol = self.fobj[i]
+                        archivo.write(str(indv) + f"    {sol[0]:.6f}\t{sol[1]:.6f}\t{0.:.6f}\n")
             
             return pop_plot, iteration_text
 
@@ -273,6 +275,5 @@ class CF6():
         return self.pop
 
 
-ag = CF6(100, 100, 0.03, 0.5, 0.3, 4, 0., 1., -2., 2.)
-indv = np.array([0.56459503,0.01702003,-0.1605145,0.27745099])
+ag = CF6(100, 100, 0.03, 0.5, 0.3, 16, 0., 1., -2., 2.)
 ag.ag_mobj()
