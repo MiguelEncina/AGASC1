@@ -2,17 +2,17 @@
 
 # Iterar sobre un rango de números
 for i in {1..9}; do
-    python3 zdt3/zdt3.py
+    python3 cf6/cf6.py
     cat <<EOL > metrics.in
 2
 1
 2
-cf6/EVAL10000_4D/P100G100/cf6_4d_all_popmp100g100_seed0$i.out
-100
-100
+cf6/EVAL10000_4D/P40G2500/cf6_4d_all_popmp40g250_seed0$i.out
+40
+250
 cf6/cf6_all_popm.out
-100
-100
+40
+250
 1
 EOL
     ./metrics < metrics.in
