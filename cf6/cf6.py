@@ -197,21 +197,38 @@ class CF6():
             # Actualizar fichero de las soluciones no dominadas
             self.update_dominant_solutions(obj_indv)
             const_indv = obj_indv[2]
-            for j in self.neighbors[i]:
-                obj_neighbor = self.fobj[j]
-                const_neighbor = obj_neighbor[2]
-                vector = self.vectors[j]
-                if const_neighbor == 0 and const_indv == 0:
-                    if self.g_te(obj_indv, vector) <= self.g_te(obj_neighbor, vector):
+            if self.n == 4:
+                for j in self.neighbors[i]:
+                    obj_neighbor = self.fobj[j]
+                    const_neighbor = obj_neighbor[2]
+                    vector = self.vectors[j]
+                    if const_neighbor == 0 and const_indv == 0:
+                        if self.g_te(obj_indv, vector) <= self.g_te(obj_neighbor, vector):
+                            self.pop[j] = indv.tolist()
+                            self.fobj[j] = obj_indv
+                    elif const_neighbor < 0 and const_indv == 0:
                         self.pop[j] = indv.tolist()
                         self.fobj[j] = obj_indv
-                elif const_neighbor < 0 and const_indv == 0:
-                    self.pop[j] = indv.tolist()
-                    self.fobj[j] = obj_indv
-                elif const_neighbor < 0 and const_indv < 0:
-                    if const_indv > const_neighbor:
-                        self.pop[j] = indv.tolist()
-                        self.fobj[j] = obj_indv
+                    elif const_neighbor < 0 and const_indv < 0:
+                        if const_indv > const_neighbor:
+                            self.pop[j] = indv.tolist()
+                            self.fobj[j] = obj_indv
+            else: 
+                obj_old_indv = self.fobj[i]
+                const_old_indv = obj_old_indv[2]
+                vector = self.vectors[i]
+                if const_old_indv == 0 and const_indv == 0:
+                    if self.g_te(obj_indv, vector) <= self.g_te(obj_old_indv, vector):
+                        self.pop[i] = indv.tolist()
+                        self.fobj[i] = obj_indv
+                elif const_old_indv < 0 and const_indv == 0:
+                    self.pop[i] = indv.tolist()
+                    self.fobj[i] = obj_indv
+                elif const_old_indv < 0 and const_indv < 0:
+                    if const_indv > const_old_indv:
+                        self.pop[i] = indv.tolist()
+                        self.fobj[i] = obj_indv
+                
     
     def read_dat_separate_coordinates(self, file_name):
         x = []
@@ -275,5 +292,8 @@ class CF6():
         return self.pop
 
 
-ag = CF6(100, 100, 0.03, 0.5, 0.3, 4, 0., 1., -2., 2.)
-ag.ag_mobj()
+ag_4D = CF6(100, 100, 0.03, 0.5, 0.3, 4, 0., 1., -2., 2.)
+ag_4D.ag_mobj()
+
+ag_4D = CF6(40, 250, 0.03, 0.5, 0.3, 16, 0., 1., -2., 2.)
+ag_4D.ag_mobj()
