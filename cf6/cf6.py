@@ -277,7 +277,7 @@ class CF6():
             pop_plot.set_offsets(np.c_[x, y])
             iteration_text.set_text(f"Iteración: {frame + 1}")
             
-            if frame == 99:
+            if frame == (self.G - 1):
                 with open("./cf6/cf6_final_popp.out", "w") as archivo:
                     for i in range(self.N):
                         sol = self.fobj[i]
@@ -291,8 +291,8 @@ class CF6():
         return self.pop
 
 
-ag_4D = CF6(100, 100, 0.03, 0.5, 0.3, 4, 0., 1., -2., 2.)
+ag_4D = CF6(200, 50, 0.03, 0.5, 0.3, 4, 0., 1., -2., 2.)
 ag_4D.ag_mobj()
 
-ag_4D = CF6(100, 100, 0.03, 0.5, 0.3, 16, 0., 1., -2., 2.)
-ag_4D.ag_mobj()
+# ag_16D = CF6(100, 100, 0.03, 0.5, 0.3, 16, 0., 1., -2., 2.)
+# ag_16D.ag_mobj()

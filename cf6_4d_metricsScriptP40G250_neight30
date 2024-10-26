@@ -1,0 +1,52 @@
+#!/bin/bash
+
+# Iterar sobre un rango de números
+for i in {1..9}; do
+    python3 cf6/cf6.py
+    gnuplot -e "
+        set terminal png; set output 'cf6/RESULTS/4D/P40G250/final_fronts_p40g250_neight30_seed0$i.png'; plot 'cf6/PF.dat' using 1:2 with points pointtype 7 linecolor 'green' title 'PF', 'cf6/EVAL10000_4D/P40G250/cf6_4d_final_popp40g250_seed0$i.out' using 1:2 with points pointtype 7 linecolor 'red' title 'NSGAII', 'cf6/cf6_final_popp.out' using 1:2 with points pointtype 7 linecolor 'blue' title 'CF6'; unset output;
+    "
+    
+    cat <<EOL > metrics.in
+2
+1
+2
+cf6/EVAL10000_4D/P40G250/cf6_4d_all_popmp40g250_seed0$i.out
+40
+250
+cf6/cf6_all_popm.out
+40
+250
+1
+EOL
+    ./metrics < metrics.in
+
+    gnuplot -e "
+        set terminal png; set output 'cf6/RESULTS/4D/P40G250/spacing_p40g250_neight30_seed0$i.png'; plot 'spacing.out' using 1:2 with lines linecolor 'blue' title 'NSGAII', 'spacing2.out' using 1:2 with lines linecolor 'red' title 'CF6'; unset output;
+    "
+    gnuplot -e "
+        set terminal png; set output 'cf6/RESULTS/4D/P40G250/hypervol_p40g250_neight30_seed0$i.png'; plot 'hypervol.out' using 1:2 with lines linecolor 'blue' title 'NSGAII', 'hypervol2.out' using 1:2 with lines linecolor 'red' title 'CF6'; unset output;
+    "
+    gnuplot -e "
+        set terminal png; set output 'cf6/RESULTS/4D/P40G250/cs_p40g250_neight30_seed0$i.png'; plot 'cs.out' using 1:2 with lines linecolor 'blue' title 'C(CF6,NSGAII)', 'cs2.out' using 1:2 with lines linecolor 'red' title 'C(NSGAII,CF6)'; unset output;
+    "
+
+    mv cf6/cf6_all_popm.out cf6/RESULTS/4D/P40G250/cf6_all_popm_p40g250_neight30_seed0$i.out
+    mv cf6/cf6_final_popp.out cf6/RESULTS/4D/P40G250/cf6_final_popp_p40g250_neight30_seed0$i.out
+    mv cf6/dominant_solutions.dat cf6/RESULTS/4D/P40G250/dominant_solutions_p40g250_neight30_seed0$i.out
+    mv spacing.out cf6/RESULTS/4D/P40G250/spacing_NSGAII_p40g250_neight30_seed0$i.out
+    mv spacing2.out cf6/RESULTS/4D/P40G250/spacing_CF6_p40g250_neight30_seed0$i.out
+    mv hypervol.out cf6/RESULTS/4D/P40G250/hypervol_NSGAII_p40g250_neight30_seed0$i.out
+    mv hypervol2.out cf6/RESULTS/4D/P40G250/hypervol_CF6_p40g250_neight30_seed0$i.out
+    mv cs.out cf6/RESULTS/4D/P40G250/cs_NSGAII_p40g250_neight30_seed0$i.out
+    mv cs2.out cf6/RESULTS/4D/P40G250/cs_CF6_p40g250_neight30_seed0$i.out
+    mv hvref.out cf6/RESULTS/4D/P40G250/hvref_p40g250_neight30_seed0$i.out
+
+done
+
+rm plot
+rm set
+rm unset
+rm extent.out
+rm extent2.out
+rm metrics.in
