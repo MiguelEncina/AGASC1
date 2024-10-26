@@ -16,5 +16,12 @@ zdt3/zdt3_all_popm.out
 1
 EOL
     ./metrics < metrics.in
+    mv spacing.out zdt3/RESULTS/P100G100/spacing_NSGAII_p100g100_seed0$i.out
+    mv spacing2.out zdt3/RESULTS/P100G100/spacing_ZDT3_p100g100_seed0$i.out
+    mv hypervol.out zdt3/RESULTS/P100G100/hypervol_NSGAII_p100g100_seed0$i.out
+    mv hypervol2.out zdt3/RESULTS/P100G100/hypervol_ZDT3_p100g100_seed0$i.out
+    mv cs.out zdt3/RESULTS/P100G100/cs_NSGAII_p100g100_seed0$i.out
+    mv cs2.out zdt3/RESULTS/P100G100/cs_ZDT3_p100g100_seed0$i.out
+    mv hvref zdt3/RESULTS/P100G100/hvref_p100g100_seed0$i
 
 done

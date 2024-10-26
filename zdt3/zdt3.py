@@ -181,6 +181,18 @@ class ZDT3():
                 y.append(float(coordinates[1]))
         return x, y
     
+    def read_dat_separate_coordinates_nsga(self, file_name):
+        x = []
+        y = []
+        with open(file_name, 'r') as file:
+            next(file)
+            next(file)
+            for i in file:
+                coordinates = i.split()
+                x.append(float(coordinates[0]))
+                y.append(float(coordinates[1]))
+        return x, y
+    
     def separate_coordinates(self):
         x = []
         y = []
@@ -197,6 +209,9 @@ class ZDT3():
         
         x_pf, y_pf = self.read_dat_separate_coordinates('./zdt3/PF.dat')
         pareto_plot = ax.scatter(x_pf, y_pf, color='green', label='Pareto front', marker='o')
+        
+        x_nsga, y_nsga = self.read_dat_separate_coordinates_nsga('./zdt3/EVAL10000/P100G100/zdt3_final_popp100g100_seed01.out')
+        nsga_plot = ax.scatter(x_nsga, y_nsga, color='red', label='NSGAII', marker='o')
 
         x, y = self.separate_coordinates()
         pop_plot = ax.scatter(x, y, color='blue', label='F(x)', marker='o')
@@ -226,5 +241,5 @@ class ZDT3():
         return self.pop
 
 
-ag = ZDT3(100, 100, 0.03, 0.7, 0.2, 0., 1.)
+ag = ZDT3(100, 100, 0.03, 0.5, 0.3, 0., 1.)
 ag.ag_mobj()
