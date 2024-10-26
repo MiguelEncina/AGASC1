@@ -280,9 +280,8 @@ class CF6():
             if frame == 99:
                 with open("./cf6/cf6_final_popp.out", "w") as archivo:
                     for i in range(self.N):
-                        indv = self.pop[i]
                         sol = self.fobj[i]
-                        archivo.write(str(indv) + f"    {sol[0]:.6f}\t{sol[1]:.6f}\t{0.:.6f}\n")
+                        archivo.write(f"{sol[0]:.6f}\t{sol[1]:.6f}\t{0.:.6f}\n")
             
             return pop_plot, iteration_text
 
@@ -295,5 +294,5 @@ class CF6():
 ag_4D = CF6(100, 100, 0.03, 0.5, 0.3, 4, 0., 1., -2., 2.)
 ag_4D.ag_mobj()
 
-ag_4D = CF6(40, 250, 0.03, 0.5, 0.3, 16, 0., 1., -2., 2.)
+ag_4D = CF6(100, 100, 0.03, 0.5, 0.3, 16, 0., 1., -2., 2.)
 ag_4D.ag_mobj()

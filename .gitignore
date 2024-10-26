@@ -1,3 +1,7 @@
 venv
 dominant_solutions.dat
 *.out
+*.png
+plot
+set
+unset

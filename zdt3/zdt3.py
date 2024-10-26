@@ -209,9 +209,6 @@ class ZDT3():
         
         x_pf, y_pf = self.read_dat_separate_coordinates('./zdt3/PF.dat')
         pareto_plot = ax.scatter(x_pf, y_pf, color='green', label='Pareto front', marker='o')
-        
-        x_nsga, y_nsga = self.read_dat_separate_coordinates_nsga('./zdt3/EVAL10000/P100G100/zdt3_final_popp100g100_seed01.out')
-        nsga_plot = ax.scatter(x_nsga, y_nsga, color='red', label='NSGAII', marker='o')
 
         x, y = self.separate_coordinates()
         pop_plot = ax.scatter(x, y, color='blue', label='F(x)', marker='o')
@@ -229,6 +226,13 @@ class ZDT3():
                 with open("./zdt3/zdt3_all_popm.out", "a") as archivo:
                     for sol in self.fobj:
                         archivo.write(f"{sol[0]:.6f}\t{sol[1]:.6f}\t{0.:.6f}\n")
+                
+            if frame == 99:
+                with open("./zdt3/zdt3_final_popp.out", "w") as archivo:
+                    for i in range(self.N):
+                        sol = self.fobj[i]
+                        archivo.write(f"{sol[0]:.6f}\t{sol[1]:.6f}\t{0.:.6f}\n")
+                        
             x, y = self.separate_coordinates()
             pop_plot.set_offsets(np.c_[x, y])
             iteration_text.set_text(f"Iteración: {frame + 1}")
