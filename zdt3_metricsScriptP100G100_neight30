@@ -44,3 +44,9 @@ EOL
 
 done
 
+rm plot
+rm set
+rm unset
+rm extent.out
+rm extent2.out
+rm metrics.in

@@ -43,3 +43,10 @@ EOL
     mv hvref.out zdt3/RESULTS/P40G250/hvref_p40g250_neight30_seed0$i.out
 
 done
+
+rm plot
+rm set
+rm unset
+rm extent.out
+rm extent2.out
+rm metrics.in

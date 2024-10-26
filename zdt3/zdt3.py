@@ -227,7 +227,7 @@ class ZDT3():
                     for sol in self.fobj:
                         archivo.write(f"{sol[0]:.6f}\t{sol[1]:.6f}\t{0.:.6f}\n")
                 
-            if frame == 99:
+            if frame == (self.G - 1):
                 with open("./zdt3/zdt3_final_popp.out", "w") as archivo:
                     for i in range(self.N):
                         sol = self.fobj[i]
@@ -245,5 +245,5 @@ class ZDT3():
         return self.pop
 
 
-ag = ZDT3(100, 100, 0.03, 0.5, 0.3, 0., 1.)
+ag = ZDT3(40, 250, 0.03, 0.5, 0.3, 0., 1.)
 ag.ag_mobj()
