@@ -245,5 +245,5 @@ class ZDT3():
         return self.pop
 
 
-ag = ZDT3(40, 250, 0.03, 0.5, 0.3, 0., 1.)
+ag = ZDT3(100, 40, 0.03, 0.5, 0.3, 0., 1.)
 ag.ag_mobj()

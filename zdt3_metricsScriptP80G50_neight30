@@ -1,0 +1,52 @@
+#!/bin/bash
+
+# Iterar sobre un rango de números
+for i in {1..9}; do
+    python3 zdt3/zdt3.py
+    gnuplot -e "
+        set terminal png; set output 'zdt3/RESULTS/P80G50/final_fronts_p80g50_neight30_seed0$i.png'; plot 'zdt3/PF.dat' using 1:2 with points pointtype 7 linecolor 'green' title 'PF', 'zdt3/EVAL4000/P80G50/zdt3_final_popp80g50_seed0$i.out' using 1:2 with points pointtype 7 linecolor 'red' title 'NSGAII', 'zdt3/zdt3_final_popp.out' using 1:2 with points pointtype 7 linecolor 'blue' title 'ZDT3'; unset output;
+    "
+
+    cat <<EOL > metrics.in
+2
+1
+2
+zdt3/EVAL4000/P80G50/zdt3_all_popmp80g50_seed0$i.out
+80
+50
+zdt3/zdt3_all_popm.out
+80
+50
+1
+EOL
+    ./metrics < metrics.in
+
+    gnuplot -e "
+        set terminal png; set output 'zdt3/RESULTS/P80G50/spacing_p80g50_neight30_seed0$i.png'; plot 'spacing.out' using 1:2 with lines linecolor 'blue' title 'NSGAII', 'spacing2.out' using 1:2 with lines linecolor 'red' title 'ZDT3'; unset output;
+    "
+    gnuplot -e "
+        set terminal png; set output 'zdt3/RESULTS/P80G50/hypervol_p80g50_neight30_seed0$i.png'; plot 'hypervol.out' using 1:2 with lines linecolor 'blue' title 'NSGAII', 'hypervol2.out' using 1:2 with lines linecolor 'red' title 'ZDT3'; unset output;
+    "
+    gnuplot -e "
+        set terminal png; set output 'zdt3/RESULTS/P80G50/cs_p80g50_neight30_seed0$i.png'; plot 'cs.out' using 1:2 with lines linecolor 'blue' title 'C(ZDT3,NSGAII)', 'cs2.out' using 1:2 with lines linecolor 'red' title 'C(NSGAII,ZDT3)'; unset output;
+    "
+
+    mv zdt3/zdt3_all_popm.out zdt3/RESULTS/P80G50/zdt3_all_popm_p80g50_neight30_seed0$i.out
+    mv zdt3/zdt3_final_popp.out zdt3/RESULTS/P80G50/zdt3_final_popp_p80g50_neight30_seed0$i.out
+    mv zdt3/dominant_solutions.dat zdt3/RESULTS/P80G50/dominant_solutions_p80g50_neight30_seed0$i.out
+    mv spacing.out zdt3/RESULTS/P80G50/spacing_NSGAII_p80g50_neight30_seed0$i.out
+    mv spacing2.out zdt3/RESULTS/P80G50/spacing_ZDT3_p80g50_neight30_seed0$i.out
+    mv hypervol.out zdt3/RESULTS/P80G50/hypervol_NSGAII_p80g50_neight30_seed0$i.out
+    mv hypervol2.out zdt3/RESULTS/P80G50/hypervol_ZDT3_p80g50_neight30_seed0$i.out
+    mv cs.out zdt3/RESULTS/P80G50/cs_NSGAII_p80g50_neight30_seed0$i.out
+    mv cs2.out zdt3/RESULTS/P80G50/cs_ZDT3_p80g50_neight30_seed0$i.out
+    mv hvref.out zdt3/RESULTS/P80G50/hvref_p80g50_neight30_seed0$i.out
+
+done
+
+rm plot
+rm set
+rm unset
+rm extent.out
+rm extent2.out
+rm metrics.in

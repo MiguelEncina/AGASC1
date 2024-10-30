@@ -177,7 +177,7 @@ class CF6():
     def reproduction(self):
         for i in range(self.N):
             indv = np.array(self.pop[i])
-            # Metodo de curce
+            # Metodo de cruce
             neighbors_indexes = random.sample(self.neighbors[i].tolist(), k=3)
             neighbors = [np.array(self.pop[m]) for m in neighbors_indexes]
             v = neighbors[0] + self.F * (neighbors[1] - neighbors[2])
@@ -291,8 +291,8 @@ class CF6():
         return self.pop
 
 
-# ag_4D = CF6(200, 50, 0.03, 0.5, 0.3, 4, 0., 1., -2., 2.)
+# ag_4D = CF6(100, 100, 0.03, 0.5, 0.3, 4, 0., 1., -2., 2.)
 # ag_4D.ag_mobj()
 
-ag_16D = CF6(40, 250, 0.03, 0.5, 0.3, 16, 0., 1., -2., 2.)
+ag_16D = CF6(100, 100, 0.03, 0.5, 0.3, 16, 0., 1., -2., 2.)
 ag_16D.ag_mobj()
